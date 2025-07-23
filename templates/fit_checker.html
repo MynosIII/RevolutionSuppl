@@ -1,0 +1,59 @@
+{% extends 'layout.html' %}
+{% block title %}Amazon Fit Checker{% endblock %}
+{% block content %}
+<div class="card">
+    <h5 class="card-header">Amazon Fit Checker</h5>
+    <div class="card-body">
+        <p>Enter a list of ASINs to check for the presence of the 'Amazon Fit' element on their product pages. Results will appear in real-time.</p>
+        <form id="asin-form">
+            <div class="mb-3">
+                <label for="asins" class="form-label">Paste ASINs (separated by line, space, or comma):</label>
+                <textarea class="form-control" id="asins" name="asins" rows="8" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Start Checking</button>
+        </form>
+        <hr>
+        <h4 class="mt-4">Results in real time:</h4>
+        <div id="results" class="log-box">Waiting ASINs...</div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('asin-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const asinsTextarea = document.getElementById('asins');
+    const resultsDiv = document.getElementById('results');
+    const submitButton = this.querySelector('button[type="submit"]');
+
+    resultsDiv.textContent = 'Starting Process...';
+    submitButton.disabled = true;
+    submitButton.textContent = 'Processing...';
+
+    try {
+        const response = await fetch("{{ url_for('fit_checker') }}", {
+            method: 'POST',
+            body: new FormData(this)
+        });
+
+        resultsDiv.textContent = '';
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            resultsDiv.textContent += decoder.decode(value, { stream: true });
+            resultsDiv.scrollTop = resultsDiv.scrollHeight; // Auto-scroll
+        }
+
+    } catch (error) {
+        resultsDiv.textContent = 'Error connecting to server: ' + error;
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = 'Start Check';
+    }
+});
+</script>
+{% endblock %}

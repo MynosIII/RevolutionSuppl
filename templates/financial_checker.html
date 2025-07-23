@@ -1,0 +1,32 @@
+{% extends 'layout.html' %}
+{% block title %}Financial Checker{% endblock %}
+{% block content %}
+<div class="card">
+    <h5 class="card-header">Financial data checker ONLY COMP WITH SELLERBOARD</h5>
+    <div class="card-body">
+        <form method="post">
+            <div class="mb-3">
+                <label for="financial_text" class="form-label">Paste financial data here:</label>
+                <textarea class="form-control" id="financial_text" name="financial_text" rows="10" required>{{ original_text or '' }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Analizar</button>
+        </form>
+        {% if results %}
+        <hr>
+        <h4 class="mt-4">Results of the analysis</h4>
+        <div class="row">
+            {% for key, value in results.items() %}
+            <div class="col-md-6">
+                <strong>{{ key }}:</strong> 
+                {% if '---' in value %}
+                    <hr class="my-1">
+                {% else %}
+                    {{ value }}
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
